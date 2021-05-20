@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const { STRING } = Sequelize;
+const { DataTypes } = Sequelize;
 
 const db = new Sequelize('postgres://localhost/souvenirs', {logging: false});
 
@@ -8,7 +9,7 @@ const People = db.define('people', {
         type: STRING,
         allowNull: false,
         unique: true
-    }
+    },
 })
 const Place = db.define('place', {
     name: {
@@ -27,9 +28,12 @@ const Thing = db.define('thing', {
 
 const Souvenir = db.define('souvenir', {})
 
-Souvenir.belongsTo(People);
+Souvenir.belongsTo(People, {foreignKey: 'buyerId'}, {as: 'buyer'});
 Souvenir.belongsTo(Place);
 Souvenir.belongsTo(Thing);
+People.hasMany(Souvenir);
+Place.hasMany(Souvenir);
+Thing.hasMany(Souvenir);
 
 const data = {
     people: ['moe', 'larry', 'lucy', 'ethyl'],
@@ -55,9 +59,11 @@ const syncAndSeed = async()=> {
             thingId: quq.id
         })
     ])
+    console.log('Sync and Seed operation complete')
 }
 
 //syncAndSeed();
+
 
 module.exports = {
     syncAndSeed,
