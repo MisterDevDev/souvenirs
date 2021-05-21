@@ -1,14 +1,17 @@
 const { syncAndSeed, models: {Person, Place, Thing, Souvenir} } = require('./db');
 const express = require('express');
 const app = express();
+const path = require('path');
 
-app.put('/souvenirs/:id', async(req, res, next)=> {
+app.use(express.urlencoded({extended: false}));
+
+app.use('/assets', express.static(path.join(__dirname, 'assets')))
+
+app.post('/souvenirs', async(req, res, next)=> {
     try{
-        const souvenirs = await Souvenir.create({
-                personId: lucy.id,
-                placeId: paris.id,
-                thingId: bar.id
-            })
+        console.log(req.body)
+        await Souvenir.create(req.body);
+        res.redirect('/')
     } catch(err) {
         next(err)
     }
@@ -52,31 +55,35 @@ app.get('/', async(req, res, next)=> {
                         </ul>
                         <h2>Souvenirs</h2>
                         <ul>
-                            ${souvenirs.map( souvenir => `
-                            <li>Person name (${souvenir.person.name}), Place ID (${souvenir.place.name}), Thing ID (${souvenir.thing.name})</li>
-                            `).join('')}
+                            ${souvenirs.map(({person, place, thing}) => {
+                            return`
+                            <li>${person.name} bought ${thing.name} in ${place.name}</li>
+                            `}).join('')}
                         </ul>
-                        <form method='POST' action='/souvenirs/'>
+                        <form method='POST' action='/souvenirs'>
                             <select name='personId'>
                                 <option>-- select buyer --</option>
                                 ${
-                                    person.map( person => `
-                                    <option ${ person.id === souvenirs.personId ? 'selected="selected"':''}>${ person.name}</option>
-                                    `).join('')}
+                                    person.map( person => {
+                                        return `
+                                    <option value=${person.id}>${person.name}</option>
+                                    `}).join('')}
                             </select>
-                            <select name='personId'>
+                            <select name='placeId'>
                                 <option>-- select place --</option>
                                 ${
-                                    places.map( place => `
-                                    <option ${ place.id === souvenirs.placeId ? 'selected="selected"':''}>${ place.name}</option>
-                                    `).join('')}
+                                    places.map( place => {
+                                        return `
+                                    <option value=${place.id}>${place.name}</option>
+                                    `}).join('')}
                             </select>
-                            <select name='personId'>
+                            <select name='thingId'>
                                 <option>-- select thingy --</option>
                                 ${
-                                    things.map( thing => `
-                                    <option ${ things.id === souvenirs.thingId ? 'selected="selected"':''}>${ thing.name}</option>
-                                    `).join('')}
+                                    things.map( thing => {
+                                        return `
+                                    <option value=${thing.id}>${thing.name}</option>
+                                    `}).join('')}
                             </select>
                             <button>Save</button>
                         </form>
