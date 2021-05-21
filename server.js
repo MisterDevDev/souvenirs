@@ -1,4 +1,4 @@
-const { syncAndSeed, models: {People, Place, Thing, Souvenir} } = require('./db');
+const { syncAndSeed, models: {Person, Place, Thing, Souvenir} } = require('./db');
 const express = require('express');
 const app = express();
 
@@ -16,15 +16,16 @@ app.put('/souvenirs/:id', async(req, res, next)=> {
 
 app.get('/', async(req, res, next)=> {
     try{
-        const [people, places, things, souvenirs] = await Promise.all([
-            People.findAll(),
+        const [person, places, things, souvenirs] = await Promise.all([
+            Person.findAll(),
             Place.findAll(),
             Thing.findAll(),
             Souvenir.findAll({
-                include: [ People, Place, Thing ]
+                include: [ Person, Place, Thing ]
             }),
         ])
-        //console.log(souvenirs.buyer)
+        //const values = (souvenirs[0].dataValues)
+        // console.log(test.person.name);
         res.send(`
             <html>
                 <head>
@@ -33,7 +34,7 @@ app.get('/', async(req, res, next)=> {
                     <div>
                         <h2>People</h2>
                         <ul>
-                            ${people.map( person => `
+                            ${person.map( person => `
                             <li>${person.name}</li>
                             `).join('')}
                         </ul>
@@ -52,14 +53,14 @@ app.get('/', async(req, res, next)=> {
                         <h2>Souvenirs</h2>
                         <ul>
                             ${souvenirs.map( souvenir => `
-                            <li>Person name = ${souvenirs.personId}, Place ID = ${souvenir.placeId}, Thing ID = ${souvenir.thingId}</li>
+                            <li>Person name (${souvenir.person.name}), Place ID (${souvenir.place.name}), Thing ID (${souvenir.thing.name})</li>
                             `).join('')}
                         </ul>
                         <form method='POST' action='/souvenirs/'>
                             <select name='personId'>
                                 <option>-- select buyer --</option>
                                 ${
-                                    people.map( person => `
+                                    person.map( person => `
                                     <option ${ person.id === souvenirs.personId ? 'selected="selected"':''}>${ person.name}</option>
                                     `).join('')}
                             </select>

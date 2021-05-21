@@ -2,9 +2,9 @@ const Sequelize = require('sequelize');
 const { STRING } = Sequelize;
 const { DataTypes } = Sequelize;
 
-const db = new Sequelize('postgres://localhost/souvenirs', {logging: false});
+const db = new Sequelize('postgres://localhost:5432/souvenirs', {logging: false});
 
-const People = db.define('people', {
+const Person = db.define('person', {
     name: {
         type: STRING,
         allowNull: false,
@@ -28,10 +28,10 @@ const Thing = db.define('thing', {
 
 const Souvenir = db.define('souvenir', {})
 
-Souvenir.belongsTo(People, {foreignKey: 'buyerId'}, {as: 'buyer'});
+Souvenir.belongsTo(Person);
 Souvenir.belongsTo(Place);
 Souvenir.belongsTo(Thing);
-People.hasMany(Souvenir);
+Person.hasMany(Souvenir);
 Place.hasMany(Souvenir);
 Thing.hasMany(Souvenir);
 
@@ -44,7 +44,7 @@ const data = {
 const syncAndSeed = async()=> {
     await db.sync({ force: true });
     const [moe, larry, lucy, ethyl] = await Promise.all(
-        data.people.map( name => People.create({name}))
+        data.people.map( name => Person.create({name}))
     );
     const [paris, nyc, chicago, london] = await Promise.all(
         data.places.map( name => Place.create({name}))
@@ -68,7 +68,7 @@ const syncAndSeed = async()=> {
 module.exports = {
     syncAndSeed,
     models: {
-        People,
+        Person,
         Place,
         Thing,
         Souvenir
